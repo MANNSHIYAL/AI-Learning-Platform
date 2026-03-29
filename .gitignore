@@ -1,0 +1,4 @@
+configurations/
+kafka_data/
+mysql-storage/
+postgres-storage/
