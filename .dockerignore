@@ -1,0 +1,14 @@
+# Ignore database storage
+mysql-storage/
+postgres-storage/
+kafka-storage/
+kafka_data/
+
+# Ignore build artifacts
+**/target/
+**/.mvn/
+mvnw
+mvnw.cmd
+
+# Ignore local git data
+.git/
