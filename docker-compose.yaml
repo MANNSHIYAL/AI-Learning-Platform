@@ -106,7 +106,7 @@ services:
     image: mysql:latest
     container_name: mysql_task
     environment:
-      MYSQL_ROOT_PASSWORD: root
+      MYSQL_ROOT_PASSWORD: password
       MYSQL_DATABASE: taskDb
     ports:
       - "3307:3306" # Maps to 3307 on your Windows machine
@@ -169,7 +169,8 @@ services:
       - ./configurations:/config-repo
     environment:
       SPRING_PROFILES_ACTIVE: native
-      SPRING_CLOUD_CONFIG_SERVER_GIT_URI: file:///config-repo
+      SPRING_CLOUD_CONFIG_SERVER_NATIVE_SEARCH_LOCATIONS: file:///config-repo/
+      SPRING_CLOUD_CONFIG_SERVER_NATIVE_SEARCH-LOCATIONS: file:///config-repo/
     ports:
       - "8888:8888"
     restart: always

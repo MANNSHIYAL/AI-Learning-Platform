@@ -3,6 +3,8 @@ package com.multisystem.auth.authservice.entity;
 import com.multisystem.auth.authservice.staticvalues.Role;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -21,5 +23,6 @@ public class User {
     private String userName;
     private String email;
     private String password;
+    @Enumerated(EnumType.STRING)
     private Role role;
 }
