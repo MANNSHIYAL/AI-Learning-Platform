@@ -1,4 +1,4 @@
-configurations/
+.env
 kafka_data/
 mysql-storage/
 postgres-storage/
