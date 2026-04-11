@@ -5,6 +5,7 @@ import org.springframework.cloud.gateway.route.RouteLocator;
 import org.springframework.cloud.gateway.route.builder.RouteLocatorBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 
 import com.multisystem.gateway.apigateway.filter.JwtAuthFilter;
 
@@ -23,22 +24,22 @@ public class GatewayConfig {
                 .route("auth-service-public", r -> r
                     .path("/auth/register","/auth/login")
                     .filters(f -> f
-                        // .requestRateLimiter(config -> config
-                        //     .setRateLimiter(redisRateLimiter(5, 10))
-                        //     // .setKeyResolver(new PrincipalNameKeyResolver())
-                        //     .setKeyResolver(redisConfig.ipKeyResolver())
-                        // )
+                        .requestRateLimiter(config -> config
+                            .setRateLimiter(unsecureAuthRateLimiter())
+                            // .setKeyResolver(new PrincipalNameKeyResolver())
+                            .setKeyResolver(redisConfig.ipKeyResolver())
+                        )
                         .addResponseHeader("X-Gateway", "AI-Learning-Platform")
                     )
                     .uri("lb://auth-service")
                 )
                 // Auth validate — called by other services, needs JWT
                 .route("auth-service-secure", r -> r
-                    .path("/auth/validate","/auth/user/**")
+                    .path("/auth/validate","/auth/test","/auth/user/**")
                     .filters(f -> f
                     .filter(jwtAuthFilter.apply(new JwtAuthFilter.Config()))
                         .requestRateLimiter(config -> config
-                            .setRateLimiter(redisRateLimiter(20, 30))
+                            .setRateLimiter(secureAuthRateLimiter())
                         )
                     )
                     .uri("lb://auth-service")
@@ -50,7 +51,7 @@ public class GatewayConfig {
                     .filters(f ->f
                         .filter(jwtAuthFilter.apply(new JwtAuthFilter.Config()))
                         .requestRateLimiter(config -> config
-                            .setRateLimiter(redisRateLimiter(30, 50))
+                            .setRateLimiter(taskRateLimiter())
                         )
                         // Incase if I am using api/tasks/{something} => Then this will rewrite the api for the load balancer to redirect it to the correct service.
                         // .rewritePath("/tasks/(?<segment>.*)", "/api/tasks/${segment}")
@@ -64,7 +65,7 @@ public class GatewayConfig {
                     .filters(f ->f 
                         .filter(jwtAuthFilter.apply(new JwtAuthFilter.Config()))
                         .requestRateLimiter(config -> config
-                            .setRateLimiter(redisRateLimiter(10, 15))
+                            .setRateLimiter(aiRateLimiter())
                         )
                     )
                     .uri("lb://ai-service")
@@ -75,7 +76,7 @@ public class GatewayConfig {
                     .filters(f -> f
                         .filter(jwtAuthFilter.apply(new JwtAuthFilter.Config()))
                         .requestRateLimiter(config -> config
-                            .setRateLimiter(redisRateLimiter(20, 30))
+                            .setRateLimiter(embeddingRateLimiter())
                         )
                     )
                     .uri("lb://embedding-service")
@@ -87,7 +88,29 @@ public class GatewayConfig {
                 )
                 .build();
     }
-    private RedisRateLimiter redisRateLimiter(int replenishRate, int burstCapacity) {
-        return new RedisRateLimiter(replenishRate, burstCapacity);
+    // private RedisRateLimiter redisRateLimiter(int replenishRate, int burstCapacity) {
+    //     return new RedisRateLimiter(replenishRate, burstCapacity);
+    // }
+    @Bean
+    @Primary
+    public RedisRateLimiter unsecureAuthRateLimiter() {
+        return new RedisRateLimiter(5, 10);
+    }
+    @Bean
+    public RedisRateLimiter secureAuthRateLimiter() {
+        return new RedisRateLimiter(20, 30);
+    }
+
+    @Bean
+    public RedisRateLimiter taskRateLimiter() {
+        return new RedisRateLimiter(30, 50);
+    }
+    @Bean
+    public RedisRateLimiter aiRateLimiter() {
+        return new RedisRateLimiter(30, 50);
+    }
+    @Bean
+    public RedisRateLimiter embeddingRateLimiter() {
+        return new RedisRateLimiter(30, 50);
     }
 }

@@ -1,7 +1,5 @@
 package com.multisystem.gateway.apigateway.filter;
 
-import java.util.Optional;
-
 import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFactory;
 import org.springframework.http.HttpHeaders;
@@ -31,26 +29,31 @@ public class JwtAuthFilter extends AbstractGatewayFilterFactory<JwtAuthFilter.Co
             String authHeader = exchange.getRequest()
                                 .getHeaders()
                                 .getFirst(HttpHeaders.AUTHORIZATION);
-            if(Optional.ofNullable(authHeader).filter(h -> h.startsWith(BEARER)).isEmpty()){
+            if (authHeader == null || !authHeader.startsWith(BEARER)) {
                 return unauthorized(exchange);
             }
 
             String token = authHeader.substring(BEARER.length());
 
-            return Optional.of(token)
-                    .filter(jwtUtil::isTokenValid)
-                    .map(validToken -> {
-                        String userId = jwtUtil.extractUserId(validToken);
-                        String role = jwtUtil.extractRole(validToken);
+            // 2. Validate token and mutate exchange
+            try {
+                if (jwtUtil.isTokenValid(token)) {
+                    String userId = jwtUtil.extractUserId(token);
+                    String role = jwtUtil.extractRole(token);
 
-                        ServerWebExchange mutatedExchange = exchange.mutate()
-                            .request(r -> r
-                                .header("X-User-Id", userId)
-                                .header("X-User-Role", role)
-                            ).build();
-                        return chain.filter(mutatedExchange);
-                    })
-                    .orElseGet(() -> unauthorized(exchange));
+                    ServerWebExchange mutatedExchange = exchange.mutate()
+                        .request(r -> r
+                            .header("X-User-Id", userId)
+                            .header("X-User-Role", role)
+                        ).build();
+
+                    return chain.filter(mutatedExchange);
+                }
+            } catch (Exception e) {
+                // Log error: "JWT Validation failed: " + e.getMessage()
+            }
+
+            return unauthorized(exchange);
         };
     }
     public static class Config {
