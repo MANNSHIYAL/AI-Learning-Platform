@@ -261,6 +261,23 @@ services:
     depends_on:
       - config-service
       - discovery-service
+      - redis
     ports:
       - "8080:8080"
     restart: always
+
+  # ---------------------------
+  # REDIS (for rate limiting)
+  # ---------------------------
+  redis:
+    image: redis:7-alpine
+    container_name: redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - ./redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5

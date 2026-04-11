@@ -1,3 +1,4 @@
 kafka_data/
 mysql-storage/
 postgres-storage/
+redis-data/

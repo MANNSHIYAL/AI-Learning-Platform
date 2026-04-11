@@ -15,7 +15,7 @@ import lombok.RequiredArgsConstructor;
 @EnableWebSecurity
 @RequiredArgsConstructor
 public class WebSecurityFilter {
-    @Value("${auth.permit-all-paths:auth/**}")
+    @Value("${auth.permit-all-paths:/auth/**}")
     private String paths;
 
     private final JwtAuthFilter jwtAuthFilter;
