@@ -1,4 +1,4 @@
-package com.multisystem.taskcontracts.dto;
+package com.multisystem.taskcontract.dto;
 
 public class TaskDTO {
 

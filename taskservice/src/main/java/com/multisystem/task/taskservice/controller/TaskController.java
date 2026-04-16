@@ -5,8 +5,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.multisystem.contracts.events.TaskEvent;
-import com.multisystem.task.taskservice.producer.TaskProducer;
+import com.multisystem.task.taskservice.producer.TaskKafkaProducer;
+import com.multisystem.taskcontract.events.TaskCreatedEvent;
 
 import lombok.RequiredArgsConstructor;
 
@@ -14,11 +14,11 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/tasks")
 @RequiredArgsConstructor
 public class TaskController {
-    private TaskProducer taskProducer;
+    private TaskKafkaProducer taskProducer;
 
     @PostMapping
-    public String create(@RequestBody TaskEvent event){
-        taskProducer.send(event);
+    public String create(@RequestBody TaskCreatedEvent event){
+        taskProducer.publishTaskCreated(event);
         return "Task Sent";
     }
 }
